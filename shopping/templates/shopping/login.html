@@ -1,0 +1,27 @@
+{% extends "shopping/layout.html" %}
+
+{% block body %}
+
+    <div class="d-flex flex-column align-items-center">
+
+        <form action="{% url 'login' %}" method="post" 
+            class="container d-flex flex-column align-items-center m-4">
+            {% csrf_token %}
+
+            <div class="">
+                {{ form }}
+            </div>
+
+            <button class="btn btn-dark mt-4" type="submit">Login</button>
+
+        </form>
+
+        <div class="m-2 text-center">
+            Don't have an account?
+            <a href="{% url 'register' %}" class="ms-2" style="color: var(--yellow-green);">
+                Register here.
+            </a>
+        </div>
+    </div>
+
+{% endblock %}

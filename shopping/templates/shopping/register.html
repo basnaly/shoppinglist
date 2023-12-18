@@ -1,0 +1,32 @@
+{% extends "shopping/layout.html" %}
+
+{% block body %}
+
+    <div class="d-flex flex-column align-items-center">
+
+        <div class="mt-3" style="color: var(--yellow-green);">
+            <div>Your password must contain at least 8 characters:</div>
+            <div>uppercase, lowercase, symbols and numbers.</div>
+        </div>
+
+        <form action="{% url 'register' %}" method="post" 
+            class="container d-flex flex-column align-items-center m-4">
+            {% csrf_token %}
+
+            <div class="grid-2-columns">
+                {{ form }}
+            </div>
+
+            <button class="btn btn-dark mt-4" type="submit">Register</button>
+
+        </form>
+
+        <div class="m-2 text-center">
+            Already have an account?
+            <a href="{% url 'login' %}" class="ms-2" style="color: var(--yellow-green);">
+                Log In here.
+            </a>
+        </div>
+    </div>
+
+{% endblock %}

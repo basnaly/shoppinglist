@@ -1,0 +1,25 @@
+html {
+    --yellow-green: #BAFF39;
+    --dull-gray: #6E6E6E;
+    --white: #FFFFFFFF;
+}
+
+body {
+    background-color: var(--dull-gray);
+    color: var(--white)
+}
+
+.navbar {
+    background-color: var(--dull-gray);
+    --bs-emphasis-color-rgb: var(--white);
+}
+
+.navbar-brand {
+    color: var(--yellow-green);
+}
+
+.grid-2-columns {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    grid-gap: 20px;
+}
