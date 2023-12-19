@@ -1,16 +1,24 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
+from django.core.exceptions import ValidationError
 from shopping.forms import RegisterForm, LoginForm
-from .models import User
+from .models import User, Shop
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.db import IntegrityError
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
 def index(request):
-    return render(request, "shopping/index.html",{})
+    user_shops = []
+    if request.user.is_authenticated:
+        user = User.objects.get(id=request.user.id)
+        user_shops = Shop.objects.filter(owner=user)
+    return render(request, "shopping/index.html",{
+        "user_shops": user_shops
+    })
 
 
 def register(request):
@@ -30,7 +38,9 @@ def register(request):
             
             if password != confirmation:
                 messages.error(request, "Password must match conformation.")
-                return HttpResponseRedirect(reverse("register"))
+                return render(request, "shopping/register.html", {
+                    "form": form
+                })
                 
             try:
                 new_user = User.objects.create_user(
@@ -43,15 +53,18 @@ def register(request):
                 new_user.save()
             except IntegrityError:
                 messages.error(request, "User already taken!")
-                return HttpResponseRedirect(reverse("register"))
+                return render(request, "shopping/register.html", {
+                    "form": form
+                })
             
             login(request, new_user)
             messages.success(request, "The user was successfully saved!")
             return HttpResponseRedirect(reverse("index"))
         else:
-            print(form.errors)
             messages.error(request, "Some of the values are not valid!")
-            return HttpResponseRedirect(reverse("register"))
+            return render(request, "shopping/register.html", {
+                "form": form,
+            })
                 
 
 def login_view(request):
@@ -80,7 +93,32 @@ def login_view(request):
             })
 
 
-
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("login"))
+
+
+@login_required
+def add_shop(request):
+    user = User(id=request.user.id)
+    user_shops = Shop.objects.filter(owner=user)
+    if request.method == "POST":
+        shop_name = request.POST.get("shop_name")
+        # name="shop_name" from index.html form input
+        try:
+            if not shop_name:
+                raise ValidationError(message="Please enter the valid text!")
+            new_shop = Shop.objects.create(
+                shop_name = shop_name,
+                owner = user
+            )
+            new_shop.save()
+        except IntegrityError:
+            messages.error(request, "Something went wrong. Try again later.")
+            return HttpResponseRedirect(reverse("index"))
+        except ValidationError:
+            messages.error(request, "Please enter the valid text!")
+            return HttpResponseRedirect(reverse("index"))
+        messages.success(request, f"The shop {new_shop.shop_name} was successfully added!")
+        return HttpResponseRedirect(reverse("index"))
+    
