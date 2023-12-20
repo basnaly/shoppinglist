@@ -15,3 +15,15 @@ class Shop(models.Model):
     
     def __str__(self):
         return f"{self.shop_name}, {self.owner}"
+    
+    
+class Item(models.Model):
+    item_name = models.CharField(max_length=256)
+    item_note = models.CharField(max_length=2056, blank=True)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, related_name="shops")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="items")
+    
+    def __str__(self):
+        return f"{self.item_name}, {self.item_note}, {self.shop}, {self.owner}"
+    
+    

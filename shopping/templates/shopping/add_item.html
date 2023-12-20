@@ -1,0 +1,43 @@
+{% extends "shopping/layout.html" %}
+
+{% block body %}
+
+    <div>
+
+        <div class="text-center my-4">
+            Type the items of your shops.
+        </div>
+
+        {% comment %} on submit POST /add_item {(input.name = item_name): input.value}  {% endcomment %}
+        <form action="{% url 'add_item' %}" method="post" id="item-form" class="container d-flex flex-column align-items-center">
+            {% csrf_token %}
+
+            <div class="d-flex flex-column align-items-center">
+
+                <div class="input-group mb-4">
+                    <span class="input-group-text">Select your shop</span>
+                    <select class="form-select" name="shop">
+                        {% for shop in user_shops %}
+                            <option value={{ shop.shop_name }} class="text-center fs-4">{{ shop.shop_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Type the item</span>
+                    <input type="text" name="item_name" class="form-control">
+                </div>
+
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Notes</span>
+                    <textarea type="text" name="item_note" class="form-control" rows="2"></textarea>
+                </div>
+
+                <input class="btn button-green mb-4" type="submit" value="Add Item" />
+            </div>
+        </form>
+
+    </div>
+
+
+{% endblock %}

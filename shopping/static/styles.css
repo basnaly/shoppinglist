@@ -34,3 +34,7 @@ body {
 .auth {
     color: var(--yellow-green);
 }
+
+.button-green {
+    --bs-btn-bg: var(--yellow-green);
+}

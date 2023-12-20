@@ -3,11 +3,12 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 from shopping.forms import RegisterForm, LoginForm
-from .models import User, Shop
+from .models import User, Shop, Item
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 
@@ -16,8 +17,10 @@ def index(request):
     if request.user.is_authenticated:
         user = User.objects.get(id=request.user.id)
         user_shops = Shop.objects.filter(owner=user)
+        user_items = Item.objects.filter(owner=user)
     return render(request, "shopping/index.html",{
-        "user_shops": user_shops
+        "user_shops": user_shops,
+        "user_items": user_items
     })
 
 
@@ -102,7 +105,12 @@ def logout_view(request):
 def add_shop(request):
     user = User(id=request.user.id)
     user_shops = Shop.objects.filter(owner=user)
-    if request.method == "POST":
+    if request.method == "GET":
+        return render(request, "shopping/add_shop.html", {
+            "user": user,
+            "user_shops": user_shops
+        })
+    else:
         shop_name = request.POST.get("shop_name")
         # name="shop_name" from index.html form input
         try:
@@ -115,10 +123,68 @@ def add_shop(request):
             new_shop.save()
         except IntegrityError:
             messages.error(request, "Something went wrong. Try again later.")
-            return HttpResponseRedirect(reverse("index"))
+            return HttpResponseRedirect(reverse("add_shop"))
         except ValidationError:
             messages.error(request, "Please enter the valid text!")
-            return HttpResponseRedirect(reverse("index"))
+            return HttpResponseRedirect(reverse("add_shop"))
         messages.success(request, f"The shop {new_shop.shop_name} was successfully added!")
         return HttpResponseRedirect(reverse("index"))
     
+    
+@login_required
+def add_item(request):
+    user = User.objects.get(id=request.user.id)
+    user_shops = Shop.objects.filter(owner=user)
+    user_items = Item.objects.filter(owner=user)
+    if request.method == "GET":
+        return render(request, "shopping/add_item.html", {
+            "user_shops": user_shops,
+            "user_items": user_items
+        })
+    else:
+        item_name = request.POST.get("item_name")
+        item_note = request.POST.get("item_note")
+        shop = request.POST.get("shop")
+        if not item_name or not shop:
+            raise ValidationError(message="Please enter the valid text!")
+        try: 
+            shop = Shop.objects.get(owner=user, shop_name=shop)
+            new_item = Item.objects.create(
+                item_name = item_name,
+                item_note = item_note,
+                shop = shop,
+                owner = user
+            )
+            new_item.save()
+        except IntegrityError:
+            messages.error(request, "Something went wrong. Try again later.")
+            return HttpResponseRedirect(reverse("add_item"))
+        except ValidationError:
+            messages.error(request, "Please enter the valid text!")
+            return HttpResponseRedirect(reverse("add_item"))
+        messages.success(request, f"The {new_item.item_name} item was successfully added!")
+        return HttpResponseRedirect(reverse("index"))
+
+
+@csrf_exempt
+@login_required
+def delete_item(request, name):
+    user = User.objects.get(id=request.user.id)
+    user_items = Item.objects.filter(owner=user)
+    try:
+        item = Item.objects.get(id=name, owner=user)
+    except Item.DoesNotExist:
+        return JsonResponse({
+            "message": "It is not your item!"
+        }) 
+   
+    if request.method == "DELETE":
+        try:
+            item.delete()
+        except IntegrityError:
+            return JsonResponse({
+                "message": "Something went wrong. Try again later."
+            })
+        return JsonResponse({
+            "message": f"Your { item.item_name } was successfully removed!"
+        })
