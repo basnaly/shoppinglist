@@ -105,12 +105,7 @@ def logout_view(request):
 def add_shop(request):
     user = User(id=request.user.id)
     user_shops = Shop.objects.filter(owner=user)
-    if request.method == "GET":
-        return render(request, "shopping/add_shop.html", {
-            "user": user,
-            "user_shops": user_shops
-        })
-    else:
+    if request.method == "POST":
         shop_name = request.POST.get("shop_name")
         # name="shop_name" from index.html form input
         try:
@@ -123,10 +118,10 @@ def add_shop(request):
             new_shop.save()
         except IntegrityError:
             messages.error(request, "Something went wrong. Try again later.")
-            return HttpResponseRedirect(reverse("add_shop"))
+            return HttpResponseRedirect(reverse("manage_shops"))
         except ValidationError:
             messages.error(request, "Please enter the valid text!")
-            return HttpResponseRedirect(reverse("add_shop"))
+            return HttpResponseRedirect(reverse("manage_shops"))
         messages.success(request, f"The shop {new_shop.shop_name} was successfully added!")
         return HttpResponseRedirect(reverse("index"))
     
@@ -170,7 +165,6 @@ def add_item(request):
 @login_required
 def delete_item(request, name):
     user = User.objects.get(id=request.user.id)
-    user_items = Item.objects.filter(owner=user)
     try:
         item = Item.objects.get(id=name, owner=user)
     except Item.DoesNotExist:
@@ -186,5 +180,62 @@ def delete_item(request, name):
                 "message": "Something went wrong. Try again later."
             })
         return JsonResponse({
-            "message": f"Your { item.item_name } was successfully removed!"
+            "message": f"Your { item.item_name } was successfully deleted!"
         })
+
+
+@csrf_exempt
+@login_required
+def delete_shop(request, name):
+        user = User.objects.get(id=request.user.id)
+        try:
+            shop = Shop.objects.get(owner=user, id=name)
+        except Shop.DoesNotExist:
+            return JsonResponse({
+                "message": "It is not your shop!"
+            })
+            
+        if request.method == "DELETE":
+            try:
+                shop.delete()
+            except IntegrityError:
+                return JsonResponse({
+                    "message": "Something went wrong. Try again later."
+                })
+        return JsonResponse({
+            "message": f"Your shop {shop.shop_name} was successfuly deleted!"
+        })
+                
+
+# @login_required
+# def delete_shop(request, name):
+#     user = User.objects.get(id=request.user.id)
+   
+#     if request.method == "POST": 
+#         try:
+#             shop = Shop.objects.get(owner=user, id=name)
+#             shop.delete()
+#         except Shop.DoesNotExist:
+#             messages.error(request, "It's not your shop!")
+#             return HttpResponseRedirect(reverse('manage_shops'))
+#         except IntegrityError:
+#             messages.error(request, "Something went wrong. Try again later.")
+#             return HttpResponseRedirect(reverse('manage_shops'))
+#         messages.success(request, f"Your { shop.shop_name } shop was successfully deleted!")
+#         return HttpResponseRedirect(reverse('manage_shops'))
+
+
+@login_required
+def manage_shops(request):
+    user = User(id=request.user.id)
+    user_shops = Shop.objects.filter(owner=user)
+    if request.method == "GET":
+        return render(request, "shopping/manage_shops.html", {
+            "user_shops": user_shops
+        })
+    
+    
+@login_required
+def profile(request):
+    user = User.objects.get(id=request.user.id)
+    pass

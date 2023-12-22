@@ -4,7 +4,7 @@
 {% block body %}
 
     {% if user.is_authenticated %}
-        <div class="container d-flex flex-wrap align-items-start" id="display-items">
+        <div class="container d-flex flex-wrap align-items-start">
 
             <script>
 
@@ -16,7 +16,7 @@
                     .then(data => {
                         console.log(data)
                         const messageElement = document.createElement('div');
-                        messageElement.className = "ms-3 mb-3 alert alert-danger fs-5";
+                        messageElement.className = "alert alert-danger shadow";
                         messageElement.id = "message"
                         document.querySelector('#display-items').prepend(messageElement);
                         document.querySelector('#message').innerHTML = data.message;
@@ -24,7 +24,7 @@
                         setTimeout(() => {
                             document.querySelector('#message').innerHTML = "";
                             window.location.replace("{% url 'index' %}");
-                        }, 20000)  
+                        }, 5000)  
                     })
                     .catch(error => {
                         console.log('Error:', error)

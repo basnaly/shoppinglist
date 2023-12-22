@@ -1,0 +1,18 @@
+{% extends "shopping/layout.html" %}
+
+{% block body %}
+
+    <div class="">
+        <div class="">Your username: {{ user.username }}</div>
+
+        <form action="{% url 'profile' %}" method="post" class="">
+            {% csrf_token %}
+
+            <div>
+                {form }
+            </div>
+        </form>
+    </div>
+
+
+{% endblock %}

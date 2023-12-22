@@ -28,7 +28,6 @@ body {
     margin-right: 150px;
     margin-left: 150px;
     margin-top: 20px;
-    color: var(--yellow-green);
 }
 
 .auth {
@@ -37,4 +36,5 @@ body {
 
 .button-green {
     --bs-btn-bg: var(--yellow-green);
+    --bs-btn-hover-border-color: var(--white);
 }

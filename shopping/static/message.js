@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("message").innerHTML;
         setTimeout(() => {
             document.getElementById("message").innerHTML = "";
-            // window.location.replace(window.location.href);
-        }, 10000)
+        }, 5000)
     }
 })
