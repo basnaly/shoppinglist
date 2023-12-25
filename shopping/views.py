@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
@@ -126,24 +127,57 @@ def add_shop(request):
         return HttpResponseRedirect(reverse("index"))
     
     
+# @login_required
+# def add_item(request):
+#     user = User.objects.get(id=request.user.id)
+#     user_shops = Shop.objects.filter(owner=user)
+#     user_items = Item.objects.filter(owner=user)
+#     if request.method == "GET":
+#         return render(request, "shopping/add_item.html", {
+#             "user_shops": user_shops,
+#             "user_items": user_items
+#         })
+#     else:
+#         item_name = request.POST.get("item_name")
+#         item_note = request.POST.get("item_note")
+#         shop = request.POST.get("shop")
+#         if not item_name or not shop:
+#             raise ValidationError(message="Please enter the valid text!")
+#         try: 
+#             shop = Shop.objects.get(owner=user, shop_name=shop)
+#             new_item = Item.objects.create(
+#                 item_name = item_name,
+#                 item_note = item_note,
+#                 shop = shop,
+#                 owner = user
+#             )
+#             new_item.save()
+#         except IntegrityError:
+#             messages.error(request, "Something went wrong. Try again later.")
+#             return HttpResponseRedirect(reverse("add_item"))
+#         except ValidationError:
+#             messages.error(request, "Please enter the valid text!")
+#             return HttpResponseRedirect(reverse("add_item"))
+#         messages.success(request, f"The {new_item.item_name} item was successfully added!")
+#         return HttpResponseRedirect(reverse("index"))
+
+
+@csrf_exempt
 @login_required
 def add_item(request):
     user = User.objects.get(id=request.user.id)
-    user_shops = Shop.objects.filter(owner=user)
-    user_items = Item.objects.filter(owner=user)
     if request.method == "GET":
-        return render(request, "shopping/add_item.html", {
-            "user_shops": user_shops,
-            "user_items": user_items
-        })
+        return JsonResponse({})
+    
     else:
-        item_name = request.POST.get("item_name")
-        item_note = request.POST.get("item_note")
-        shop = request.POST.get("shop")
-        if not item_name or not shop:
+        data = json.loads(request.body)
+        item_name = data.get("item_name")
+        item_note = data.get("item_note")
+        shop_id = data.get("shop_id")
+        if not item_name or not shop_id:
             raise ValidationError(message="Please enter the valid text!")
-        try: 
-            shop = Shop.objects.get(owner=user, shop_name=shop)
+        try:
+            shop = Shop.objects.get(owner=user, id=shop_id)
             new_item = Item.objects.create(
                 item_name = item_name,
                 item_note = item_note,
@@ -152,13 +186,16 @@ def add_item(request):
             )
             new_item.save()
         except IntegrityError:
-            messages.error(request, "Something went wrong. Try again later.")
-            return HttpResponseRedirect(reverse("add_item"))
+            return JsonResponse({
+                "message": "Something went wrong. Try again later."
+            })
         except ValidationError:
-            messages.error(request, "Please enter the valid text!")
-            return HttpResponseRedirect(reverse("add_item"))
-        messages.success(request, f"The {new_item.item_name} item was successfully added!")
-        return HttpResponseRedirect(reverse("index"))
+            return JsonResponse({
+                "message": "Please enter the valid text!"
+            })
+        return JsonResponse({
+            "message": f"The item { item_name } was successfully added!"
+        })
 
 
 @csrf_exempt

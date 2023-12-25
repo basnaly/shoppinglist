@@ -8,9 +8,11 @@ urlpatterns = [
     path("register", views.register, name="register"),
     path("logout", views.logout_view, name="logout"),
     
-    path("add_shop", views.add_shop, name="add_shop"),
+    # POST: add shop into db
+    path("add_shop", views.add_shop, name="add_shop"), 
     path("add_item", views.add_item, name="add_item"),
     
+    # GET: display add shop form 
     path("manage_shops", views.manage_shops, name="manage_shops"),
     
     path("delete_item/<str:name>", views.delete_item, name="delete_item"),
