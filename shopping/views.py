@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.core.exceptions import ValidationError
-from shopping.forms import RegisterForm, LoginForm
+from shopping.forms import RegisterForm, LoginForm, ProfileForm
 from .models import User, Shop, Item
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -275,4 +275,11 @@ def manage_shops(request):
 @login_required
 def profile(request):
     user = User.objects.get(id=request.user.id)
-    pass
+    if request.method == "GET":
+        return render(request, "shopping/profile.html", {
+            "form": ProfileForm(initial={
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name
+            })
+        })

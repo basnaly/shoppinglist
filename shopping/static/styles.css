@@ -38,3 +38,12 @@ body {
     --bs-btn-bg: var(--yellow-green);
     --bs-btn-hover-border-color: var(--white);
 }
+
+.alert {
+    --bs-success-bg-subtle: var(--yellow-green)
+}
+
+.card>.list-group {
+    border-top: 0;
+    border-bottom: 0;
+}
