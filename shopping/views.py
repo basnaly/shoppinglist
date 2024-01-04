@@ -10,11 +10,14 @@ from django.contrib import messages
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth import update_session_auth_hash
 
 # Create your views here.
 
 def index(request):
     user_shops = []
+    user_items = []
     if request.user.is_authenticated:
         user = User.objects.get(id=request.user.id)
         user_shops = Shop.objects.filter(owner=user)
@@ -283,3 +286,49 @@ def profile(request):
                 "last_name": user.last_name
             })
         })
+    else:
+        form = ProfileForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get("email")
+            first_name = form.cleaned_data.get("first_name")
+            last_name = form.cleaned_data.get("last_name")
+            current_password = form.cleaned_data.get("current_password")
+            new_password = form.cleaned_data.get("new_password")
+            confirmation = form.cleaned_data.get("confirmation")
+            
+            if not check_password(current_password, user.password):
+                messages.error(request, "The current password doesn't match.")
+                return render(request, "shopping/profile.html", {
+                    "form": form
+                })
+            
+            if new_password:
+                if new_password != confirmation:
+                    messages.error(request, "The new password doesn't match confirmation.")
+                    return render(request, "shopping/profile.html", {
+                        "form": form
+                    })
+                else: 
+                    user.set_password(new_password)
+                    
+            try:
+                user.email = email
+                user.first_name = first_name
+                user.last_name = last_name
+                user.save()
+                update_session_auth_hash(request, user)
+            except IntegrityError:
+                messages.error(request, "Something went wrong. Try again later.")
+                return render(request, "shopping/profile.html", {
+                    "form": form
+                })
+            messages.success(request, f"Your profile was successfully updated!")
+            return HttpResponseRedirect(reverse("index"))
+        else:
+            messages.error(request, "The form is not valid!")
+            return render(request, "shopping/profile.html", {
+                "form": form
+            })
+            
+                
+                
